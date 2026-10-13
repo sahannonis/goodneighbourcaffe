@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- DEMO: keep this page out of search engines until the owner approves it. Remove this line when it goes live. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Good Neighbour Caffè | Where neighbours meet</title>
+<meta name="description" content="Your daily coffee (except Monday), close to home. 718 Second Street, New Westminster.">
+<meta name="theme-color" content="#FBF9F4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Instrument+Sans:wght@400;500;600;700&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
+<script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+</script>
+<style>
+  /* Colours taken from the shop itself */
+  :root{
+    --wall:#FBF9F4;     /* white interior walls */
+    --slate:#2E3833;    /* storefront paint */
+    --ink:#1E2422;
+    --sage:#A7B39A;     /* patio chairs */
+    --butter:#F2E3A0;   /* staff T-shirts */
+    --red:#C33A2C;      /* the espresso machine */
+    --wood:#A9744B;     /* floors and shelves */
+    --line:#E4DFD3;
+    --muted:#5F625C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+  body{background:var(--wall);color:var(--ink);font-family:"Instrument Sans",system-ui,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  :focus-visible{outline:3px solid var(--red);outline-offset:3px;border-radius:4px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  @media (max-width:600px){.wrap{padding:0 16px}}
+  .serif{font-family:"EB Garamond",Georgia,serif}
+
+  .demo{background:var(--ink);color:#E9E7E0;font-size:14px;text-align:center;padding:8px 16px}
+  .demo a{color:var(--butter)}
+
+  /* header: wordmark centred like a shop sign */
+  header{border-bottom:1px solid var(--line)}
+  .bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:14px 0}
+  .bar nav{display:flex;gap:24px;font-size:15px;font-weight:500}
+  .bar nav a{text-decoration:none}
+  .bar nav a:hover{text-decoration:underline;text-underline-offset:4px}
+  .bar .right{justify-content:flex-end;align-items:center}
+  .mark{text-align:center;text-decoration:none;line-height:1}
+  .mark .g{font-family:"EB Garamond",Georgia,serif;font-size:30px;letter-spacing:-.01em}
+  .mark .c{display:block;font-family:"Mrs Saint Delafield",cursive;font-size:30px;margin-top:-6px;color:var(--slate)}
+  .call{background:var(--slate);color:var(--wall);padding:9px 18px;border-radius:999px;font-weight:600;text-decoration:none!important}
+  .call:hover{background:var(--ink)}
+  @media (max-width:760px){
+    .bar{grid-template-columns:1fr auto}
+    .bar nav.left,.bar .hide-sm{display:none}
+    .mark{text-align:left}
+  }
+
+  /* hero: one centred column */
+  .hero{text-align:center;padding:48px 0 8px}
+  .hero h1{font-family:"EB Garamond",Georgia,serif;font-weight:400;font-size:clamp(50px,9vw,124px);line-height:.95;letter-spacing:-.025em;color:var(--slate)}
+  .stage{position:relative;height:clamp(330px,40vw,500px);margin-top:4px}
+  #bar3d{position:absolute;inset:0;width:100%;height:100%;display:none;touch-action:pan-y;cursor:grab}
+  #bar3d:active{cursor:grabbing}
+  .fallback{position:absolute;inset:0;display:grid;place-items:center}
+  .fallback svg{width:min(320px,70%);height:auto}
+  .stage.is-3d #bar3d{display:block}
+  .stage.is-3d .fallback{display:none}
+  .meta{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px 14px;padding:4px 0 56px}
+  .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font-size:15px;font-weight:500}
+  .dot{width:9px;height:9px;border-radius:50%;background:#B9B6AD;flex:none}
+  .dot.open{background:#5E8C4A;box-shadow:0 0 0 4px rgba(94,140,74,.18)}
+  .btn{display:inline-block;padding:11px 20px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;border:1.5px solid var(--slate)}
+  .btn.solid{background:var(--slate);color:var(--wall)}
+  .btn.solid:hover{background:var(--ink)}
+  .btn.line:hover{background:var(--slate);color:var(--wall)}
+  .drag-hint{font-size:13px;color:var(--muted);margin-top:-4px}
+
+  /* week strip on storefront slate */
+  .week{background:var(--slate);color:var(--wall);padding:64px 0}
+  .week h2{font-family:"EB Garamond",Georgia,serif;font-style:italic;font-weight:400;font-size:clamp(30px,4vw,44px);line-height:1.1;text-align:center}
+  .week .sub{text-align:center;color:#C9CFC6;margin-top:8px}
+  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:36px;list-style:none}
+  .days li{border:1px solid rgba(251,249,244,.22);border-radius:12px;padding:14px 12px;text-align:center}
+  .days b{display:block;font-family:"EB Garamond",Georgia,serif;font-weight:500;font-size:22px}
+  .days span{font-size:14px;color:#D6DAD2}
+  .days li.off{border-style:dashed;opacity:.75}
+  .days li.today{background:var(--butter);color:var(--ink);border-color:var(--butter)}
+  .days li.today span{color:var(--ink)}
+  @media (max-width:760px){.days{grid-template-columns:repeat(4,1fr)}}
+  @media (max-width:380px){.days{grid-template-columns:repeat(3,1fr)}}
+
+  /* the menu board */
+  .board-sec{padding:84px 0}
+  .board{position:relative;background:#fff;border:1px solid var(--line);border-radius:6px;padding:48px 52px 40px;max-width:900px;margin:0 auto;
+         background-image:repeating-linear-gradient(to bottom,transparent 0 55px,#F1EDE3 55px 56px)}
+  .board h2{font-family:"EB Garamond",Georgia,serif;font-weight:400;font-size:clamp(36px,5vw,54px);line-height:1;letter-spacing:-.01em}
+  .board .lede{color:var(--muted);margin-top:8px;max-width:44ch}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px 48px;margin-top:32px}
+  .cols h3{font-size:13px;font-weight:700;color:var(--wood);margin-bottom:4px}
+  .cols ul{list-style:none}
+  .cols li{display:flex;align-items:baseline;gap:10px;padding:12px 0;font-size:18px}
+  .cols li::after{content:"";order:1;flex:1;border-bottom:2px dotted #CFC8B8;transform:translateY(-4px)}
+  .cols li small{order:2;font-size:13.5px;color:var(--muted)}
+  .board .fine{margin-top:26px;font-size:14px;color:var(--muted)}
+  /* secret menu pinned to the board */
+  .note{position:absolute;top:-22px;right:28px;width:230px;background:var(--butter);padding:22px 20px 18px;transform:rotate(3deg);box-shadow:0 10px 24px -14px rgba(30,36,34,.5)}
+  .note::before{content:"";position:absolute;top:-10px;left:50%;width:70px;height:22px;margin-left:-35px;background:rgba(255,255,255,.65);transform:rotate(-4deg)}
+  .note p{font-family:"EB Garamond",Georgia,serif;font-size:21px;line-height:1.15}
+  .note button{margin-top:12px;background:var(--slate);color:var(--wall);border:0;border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  .note .inside{display:none}
+  .note.open .front{display:none}
+  .note.open .inside{display:block}
+  .note .inside small{display:block;margin-top:6px;font-size:14px;line-height:1.4;color:#4A4636}
+  @media (max-width:760px){
+    .board{padding:34px 22px 30px}
+    .cols{grid-template-columns:1fr}
+    .note{position:relative;top:auto;right:auto;width:auto;margin:22px 4px 0;transform:rotate(-1deg)}
+  }
+
+  /* find us: map with a storefront card on it */
+  .find{position:relative}
+  .find iframe{display:block;width:100%;height:480px;border:0;filter:grayscale(.35) contrast(1.05)}
+  .card{position:absolute;top:40px;left:max(24px,calc((100% - 1120px)/2 + 24px));width:360px;background:var(--slate);color:var(--wall);border-radius:14px;padding:30px}
+  .card h2{font-family:"EB Garamond",Georgia,serif;font-weight:400;font-size:38px;line-height:1}
+  .card p{color:#D6DAD2;margin-top:10px}
+  .card ul{list-style:none;margin-top:18px}
+  .card li{padding:9px 0;border-top:1px solid rgba(251,249,244,.18);display:flex;justify-content:space-between;gap:12px}
+  .card li span{color:#B9C0B6;font-size:14px}
+  .card a{font-weight:600}
+  .card .btn{margin-top:18px;border-color:var(--butter);background:var(--butter);color:var(--ink)}
+  @media (max-width:760px){
+    .card{position:static;width:auto;border-radius:0;padding:32px 16px}
+    .find iframe{height:320px}
+  }
+
+  footer{background:var(--slate);color:#D6DAD2;text-align:center;padding:44px 16px 52px;font-size:14px}
+  footer .mark{color:var(--wall);display:inline-block}
+  footer .mark .c{color:var(--butter)}
+  footer p{margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="demo" role="note">
+  Demo made for Good Neighbour Caffè by Sahan Nonis. This is not an official website.
+  <a href="mailto:sahanconnor@gmail.com">Questions? Email me</a>
+</div>
+
+<header>
+  <div class="wrap bar">
+    <nav class="left" aria-label="Main">
+      <a href="#board">Menu</a>
+      <a href="#week">Hours</a>
+    </nav>
+    <a class="mark" href="#top" aria-label="Good Neighbour Caffè home"><span class="g">good neighbour</span><span class="c">caffè</span></a>
+    <nav class="right" aria-label="Contact">
+      <a class="hide-sm" href="https://www.instagram.com/goodneighbourcaffe/" target="_blank" rel="noopener">Instagram</a>
+      <a class="call" href="tel:+16043767854">Call</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <h1>where neighbours meet.</h1>
+    </div>
+    <div class="stage" id="stage">
+      <canvas id="bar3d" role="img" aria-label="3D espresso machine pouring a shot into a cup, with a milk jug, a croissant and a cup on a saucer. Drag sideways to turn it."></canvas>
+      <div class="fallback" aria-hidden="true">
+        <!-- line-drawn cup, in the spirit of their engraved logo -->
+        <svg viewBox="0 0 320 220" fill="none" stroke="#2E3833" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M80 70 h140 l-12 92 a24 24 0 0 1 -24 20 h-68 a24 24 0 0 1 -24 -20 z"/>
+          <path d="M220 92 a26 26 0 0 1 0 52 h-8"/>
+          <ellipse cx="150" cy="196" rx="120" ry="14"/>
+          <path d="M120 54 c-8 -14 8 -20 0 -36 M150 54 c-8 -14 8 -20 0 -36 M180 54 c-8 -14 8 -20 0 -36" stroke-width="2.5"/>
+        </svg>
+      </div>
+    </div>
+    <div class="wrap">
+      <p class="drag-hint" id="drag-hint" hidden>Drag sideways to look around the counter.</p>
+      <div class="meta">
+        <span class="pill"><span class="dot" id="dot"></span><span id="status-text">Open Tuesday to Sunday</span></span>
+        <span class="pill">718 Second St., New Westminster</span>
+        <a class="btn solid" href="https://www.google.com/maps/dir/?api=1&destination=Good+Neighbour+Caff%C3%A8,+718+2nd+St,+New+Westminster,+BC" target="_blank" rel="noopener">Get directions</a>
+        <a class="btn line" href="https://ig.me/m/goodneighbourcaffe" target="_blank" rel="noopener">Message us</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="week" id="week">
+    <div class="wrap">
+      <h2>your daily coffee (except Monday), close to home.</h2>
+      <p class="sub" id="week-sub">Find us at 718 Second Street.</p>
+      <ul class="days" id="days">
+        <li data-d="1" class="off"><b>Mon</b><span>day off</span></li>
+        <li data-d="2"><b>Tue</b><span>7:30 – 1:30</span></li>
+        <li data-d="3"><b>Wed</b><span>7:30 – 1:30</span></li>
+        <li data-d="4"><b>Thu</b><span>7:30 – 1:30</span></li>
+        <li data-d="5"><b>Fri</b><span>7:30 – 4</span></li>
+        <li data-d="6"><b>Sat</b><span>7:30 – 4</span></li>
+        <li data-d="0"><b>Sun</b><span>8 – 4</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="board-sec" id="board">
+    <div class="wrap">
+      <div class="board">
+        <h2>the board</h2>
+        <p class="lede">What the neighbours order. Plenty of milk options, just ask.</p>
+
+        <div class="note" id="note">
+          <div class="front">
+            <p>psst. there's a secret menu.</p>
+            <button id="note-open" aria-expanded="false" aria-controls="note-inside">Peek at one</button>
+          </div>
+          <div class="inside" id="note-inside">
+            <p>honey shaken espresso</p>
+            <small>Espresso shaken with honey over ice. Not on the board, so ask at the counter.</small>
+            <button id="note-close">Fold it back</button>
+          </div>
+        </div>
+
+        <div class="cols">
+          <div>
+            <h3>Coffee and co.</h3>
+            <ul>
+              <li>Iced oat vanilla latte <small>a regular's pick</small></li>
+              <li>Iced mocha</li>
+              <li>Latte <small>any milk</small></li>
+              <li>Matcha <small>ask about specials</small></li>
+            </ul>
+          </div>
+          <div>
+            <h3>From the case</h3>
+            <ul>
+              <li>Ham and cheese croissant <small>the one to get</small></li>
+              <li>Almond croissant</li>
+              <li>Everything bagel</li>
+              <li>Today's bakes</li>
+            </ul>
+          </div>
+        </div>
+        <p class="fine">In the finished site, this becomes your real board with prices, and you can update it yourself in a couple of minutes.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="find" id="find">
+    <iframe title="Map showing Good Neighbour Caffè at 718 Second Street, New Westminster" loading="lazy"
+      src="https://maps.google.com/maps?q=Good+Neighbour+Caff%C3%A8,+718+2nd+St,+New+Westminster,+BC&z=16&output=embed"></iframe>
+    <div class="card">
+      <h2>come say hi</h2>
+      <p>A short walk from Queen's Park. Grab a seat on the patio.</p>
+      <ul>
+        <li><span>Address</span><a href="https://www.google.com/maps/dir/?api=1&destination=Good+Neighbour+Caff%C3%A8,+718+2nd+St,+New+Westminster,+BC" target="_blank" rel="noopener">718 Second St.</a></li>
+        <li><span>Phone</span><a href="tel:+16043767854">(604) 376-7854</a></li>
+        <li><span>Instagram</span><a href="https://www.instagram.com/goodneighbourcaffe/" target="_blank" rel="noopener">@goodneighbourcaffe</a></li>
+      </ul>
+      <a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=Good+Neighbour+Caff%C3%A8,+718+2nd+St,+New+Westminster,+BC" target="_blank" rel="noopener">Get directions</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a class="mark" href="#top"><span class="g">good neighbour</span><span class="c">caffè</span></a>
+  <p>Where neighbours meet. 718 Second St., New Westminster, BC</p>
+  <p>Demo by Sahan Nonis, not an official site</p>
+</footer>
+
+<!-- Open-now status, today's tile, secret note -->
+<script>
+  const H = {0:[480,960],2:[450,810],3:[450,810],4:[450,810],5:[450,960],6:[450,960]};
+  const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const fmt = m => { const h=Math.floor(m/60), mm=m%60; return `${(h%12)||12}${mm?':'+String(mm).padStart(2,'0'):''} ${h<12?'am':'pm'}`; };
+  try{
+    const parts = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Vancouver',weekday:'short',hour:'numeric',minute:'numeric',hourCycle:'h23'}).formatToParts(new Date());
+    const get = t => parts.find(p=>p.type===t).value;
+    const day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(get('weekday'));
+    const mins = (+get('hour'))*60 + (+get('minute'));
+    document.querySelector(`#days li[data-d="${day}"]`)?.classList.add('today');
+    const t = H[day], text = document.getElementById('status-text'), dot = document.getElementById('dot');
+    if(t && mins>=t[0] && mins<t[1]){ dot.classList.add('open'); text.textContent = `Open now until ${fmt(t[1])}`; }
+    else if(t && mins<t[0]){ text.textContent = `Opens today at ${fmt(t[0])}`; }
+    else {
+      let n=(day+1)%7; while(!H[n]) n=(n+1)%7;
+      text.textContent = `Closed now. Back ${n===(day+1)%7?'tomorrow':names[n]} at ${fmt(H[n][0])}`;
+    }
+  }catch(e){}
+
+  const note = document.getElementById('note'), openBtn = document.getElementById('note-open');
+  openBtn.addEventListener('click', () => { note.classList.add('open'); openBtn.setAttribute('aria-expanded','true'); document.getElementById('note-close').focus(); });
+  document.getElementById('note-close').addEventListener('click', () => { note.classList.remove('open'); openBtn.setAttribute('aria-expanded','false'); openBtn.focus(); });
+</script>
+
+<!-- 3D counter: the red espresso machine pulls a shot into a cup, on a loop -->
+<script type="module">
+  import * as THREE from 'three';
+  import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('bar3d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+  try { await document.fonts.load('400 64px "EB Garamond"'); } catch (e) {}
+
+  const scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;   // gives the chrome something to reflect
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+
+  const key = new THREE.DirectionalLight(0xfff2dc, 1.7);
+  key.position.set(-4, 7, 5); key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  Object.assign(key.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5, near: 1, far: 25 });
+  key.shadow.bias = -0.001;
+  scene.add(key, new THREE.HemisphereLight(0xffffff, 0xd8d2c4, 0.35));
+
+  const world = new THREE.Group(); scene.add(world);
+  const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o });
+  const M = {
+    red: std('#C33A2C', { roughness: 0.28, metalness: 0.15 }),
+    chrome: std('#D9DDE0', { roughness: 0.12, metalness: 1 }),
+    black: std('#1B1B1B', { roughness: 0.45 }),
+    ceramic: std('#FBF8F2', { roughness: 0.22, side: THREE.DoubleSide }),
+    top: std('#F1EEE6', { roughness: 0.55 }),
+    wood: std('#A9744B', { roughness: 0.7 }),
+    stream: std('#4A2A1A', { roughness: 0.25 }),
+  };
+  function add(geo, mat, x, y, z, parent = world) {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
+    parent.add(m); return m;
+  }
+  const rbox = (w, h, d, r) => new RoundedBoxGeometry(w, h, d, 4, r);
+
+  // Counter
+  add(new THREE.BoxGeometry(7.4, 0.14, 3.2), M.top, 0, -0.07, 0.2);
+  add(new THREE.BoxGeometry(7.4, 0.7, 0.08), M.wood, 0, -0.49, 1.78);
+
+  // --- Espresso machine ---
+  const mc = new THREE.Group(); mc.position.set(0, 0, -0.25); world.add(mc);
+  for (const [x, z] of [[-1.1, -0.6], [1.1, -0.6], [-1.1, 0.6], [1.1, 0.6]])
+    add(new THREE.CylinderGeometry(0.07, 0.08, 0.18, 16), M.chrome, x, 0.09, z, mc);
+  add(rbox(2.6, 1.5, 1.6, 0.1), M.red, 0, 0.93, 0, mc);                 // body
+  add(rbox(2.6, 0.42, 0.5, 0.08), M.red, 0, 1.47, 0.95, mc);            // front head
+  add(new THREE.BoxGeometry(2.62, 0.05, 0.52), M.chrome, 0, 1.24, 0.95, mc);
+  // drip tray with slats
+  add(new THREE.BoxGeometry(2.3, 0.06, 0.62), M.chrome, 0, 0.24, 1.05, mc);
+  for (let i = 0; i < 11; i++) add(new THREE.BoxGeometry(0.03, 0.012, 0.56), M.black, -1.0 + i * 0.2, 0.275, 1.05, mc);
+  // group heads + portafilters
+  const GX = [-0.6, 0.6];
+  for (const gx of GX) {
+    add(new THREE.CylinderGeometry(0.16, 0.18, 0.16, 28), M.chrome, gx, 1.14, 0.98, mc);
+    add(new THREE.CylinderGeometry(0.19, 0.17, 0.12, 28), M.chrome, gx, 1.0, 0.98, mc);
+    const handle = add(new THREE.CylinderGeometry(0.045, 0.055, 0.55, 14), M.black, gx, 1.0, 1.33, mc);
+    handle.rotation.x = Math.PI / 2;
+    for (const s of [-0.04, 0.04]) add(new THREE.CylinderGeometry(0.018, 0.012, 0.08, 10), M.chrome, gx + s, 0.9, 0.98, mc);
+  }
+  // pressure gauge
+  add(new THREE.CircleGeometry(0.12, 32), std('#FBF8F2', { roughness: 0.4 }), 0, 1.47, 1.206, mc);
+  const rim = add(new THREE.TorusGeometry(0.125, 0.018, 12, 40), M.chrome, 0, 1.47, 1.206, mc);
+  const needle = add(new THREE.BoxGeometry(0.012, 0.09, 0.005), M.red, 0, 1.47, 1.212, mc);
+  needle.geometry.translate(0, 0.04, 0); needle.rotation.z = 0.6;
+  // cup rail + resting cups on top
+  for (const z of [-0.62, 0.62]) { const r = add(new THREE.CylinderGeometry(0.022, 0.022, 2.3, 10), M.chrome, 0, 1.76, z, mc); r.rotation.z = Math.PI / 2; }
+  for (const x of [-1.13, 1.13]) { const r = add(new THREE.CylinderGeometry(0.022, 0.022, 1.24, 10), M.chrome, x, 1.76, 0, mc); r.rotation.x = Math.PI / 2; }
+  // steam wand + knob
+  const wand = add(new THREE.CylinderGeometry(0.028, 0.022, 0.85, 12), M.chrome, 1.4, 0.98, 0.9, mc); wand.rotation.z = 0.18;
+  add(new THREE.SphereGeometry(0.07, 16, 12), M.black, 1.33, 1.47, 0.95, mc);
+  // name plate in their serif
+  {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 120;
+    const g = c.getContext('2d');
+    g.fillStyle = '#FBF8F2'; g.fillRect(0, 0, 512, 120);
+    g.fillStyle = '#2E3833'; g.font = '400 64px "EB Garamond", Georgia, serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('good neighbour', 256, 64);
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+    const plate = std('#FBF8F2');
+    add(new THREE.BoxGeometry(1.0, 0.24, 0.02), [plate, plate, plate, plate, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5 }), plate], 0, 0.62, 0.81, mc);
+  }
+
+  // --- Cups ---
+  const cupProfile = [[0,0],[0.62,0],[0.68,0.06],[0.88,0.5],[1.0,1.0],[0.975,1.035],[0.93,1.0],[0.82,0.55],[0.6,0.2],[0,0.2]].map(([x, y]) => new THREE.Vector2(x, y));
+  const cupGeo = new THREE.LatheGeometry(cupProfile, 48);
+  const handleGeo = new THREE.TorusGeometry(0.27, 0.075, 12, 30, Math.PI * 1.2);
+  const innerR = y => y < 0.55 ? 0.6 + (y - 0.2) / 0.35 * 0.22 : 0.82 + (y - 0.55) / 0.45 * 0.11;
+  function makeCup(parent, x, y, z, s) {
+    const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); parent.add(g);
+    add(cupGeo, M.ceramic, 0, 0, 0, g);
+    const h = add(handleGeo, M.ceramic, 0.93, 0.55, 0, g); h.rotation.z = -Math.PI * 0.6;
+    const coffee = add(new THREE.CircleGeometry(1, 40), std('#3B2116', { roughness: 0.3 }), 0, 0.8, 0, g);
+    coffee.rotation.x = -Math.PI / 2;
+    return { g, coffee };
+  }
+  const setLevel = (cup, lv) => { cup.coffee.visible = lv > 0.23; cup.coffee.position.y = lv; cup.coffee.scale.setScalar(innerR(lv) - 0.01); };
+
+  for (const x of [-0.45, 0.05]) setLevel(makeCup(mc, x, 1.68, -0.15, 0.17), 0);   // cups warming on top
+
+  // --- Counter props: saucer + cup + spoon, milk jug, croissant ---
+  add(new THREE.CylinderGeometry(0.46, 0.38, 0.04, 40), M.ceramic, -2.4, 0.02, 0.75);
+  const served = makeCup(world, -2.4, 0.04, 0.75, 0.2); setLevel(served, 0.8);
+  served.coffee.material = std('#B9824E', { roughness: 0.35 });
+  served.g.rotation.y = 2.3;
+  const spoon = new THREE.Group(); spoon.position.set(-2.15, 0.06, 0.95); spoon.rotation.y = 0.5; world.add(spoon);
+  add(new THREE.BoxGeometry(0.42, 0.018, 0.045), M.chrome, 0, 0, 0, spoon);
+  const bowl = add(new THREE.SphereGeometry(1, 16, 10), M.chrome, -0.24, 0.005, 0, spoon); bowl.scale.set(0.08, 0.022, 0.055);
+
+  const jug = new THREE.Group(); jug.position.set(1.85, 0, 0.75); world.add(jug);
+  add(new THREE.LatheGeometry([[0,0],[0.2,0],[0.21,0.04],[0.17,0.36],[0.2,0.46],[0.195,0.465],[0.16,0.37],[0.19,0.05],[0,0.03]].map(([x, y]) => new THREE.Vector2(x, y)), 40), M.chrome, 0, 0, 0, jug);
+  const jh = add(new THREE.TorusGeometry(0.11, 0.022, 10, 24, Math.PI), M.chrome, -0.2, 0.25, 0, jug); jh.rotation.z = Math.PI / 2;
+
+  add(new THREE.CylinderGeometry(0.62, 0.55, 0.05, 44), M.ceramic, 2.65, 0.025, 0.55);
+  const croissant = new THREE.Group(); croissant.position.set(2.65, 0.16, 0.45); croissant.rotation.y = 0.5; world.add(croissant);
+  const crust = [std('#C98B45', { roughness: 0.55 }), std('#D9A35C', { roughness: 0.55 })];
+  for (let i = -3; i <= 3; i++) {
+    const a = i * 0.36, size = 1 - Math.abs(i) * 0.15;
+    const seg = add(new THREE.SphereGeometry(1, 18, 12), crust[Math.abs(i) % 2], Math.sin(a) * 0.42, 0, -(1 - Math.cos(a)) * 0.42, croissant);
+    seg.scale.set(0.15 * size, 0.14 * size, 0.2 * size);
+    seg.rotation.y = -a;
+  }
+
+  // --- The shot ---
+  const gx = GX[0], trayTop = 0.27, cupZ = 0.98 - 0.25 + 0.25, S = 0.21;
+  const active = makeCup(mc, gx, trayTop, 0.98, S);
+  const streamGeo = new THREE.CylinderGeometry(0.014, 0.019, 1, 10, 1, true); streamGeo.translate(0, -0.5, 0);
+  const streams = [-0.04, 0.04].map(s => { const m = add(streamGeo, M.stream, gx + s, 0.86, 0.98, mc); m.castShadow = false; return m; });
+  const DARK = new THREE.Color('#3B2116'), CREMA = new THREE.Color('#B9824E');
+  const easeIO = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  const backOut = t => 1 + 2.7 * Math.pow(t - 1, 3) + 1.7 * Math.pow(t - 1, 2);
+  const CYCLE = 8;
+  function pour(t) {
+    const spoutY = 0.86;
+    let level = 0.22, scale = S, top = spoutY, flowing = false;
+    if (t < 0.5) scale = S * Math.max(0, backOut(t / 0.5));
+    if (t >= 1 && t < 4.2) { level = 0.22 + 0.56 * easeIO((t - 1) / 3.2); flowing = true; }
+    if (t >= 4.2) level = 0.78;
+    if (t >= 4.2 && t < 4.6) { flowing = true; top = spoutY - (spoutY - (trayTop + level * S)) * ((t - 4.2) / 0.4); }
+    if (t >= 6.6) { const k = Math.min(1, (t - 6.6) / 0.6); scale = S * (1 - easeIO(k)); }
+    if (t >= 7.2) { scale = 0.0001; level = 0.22; }
+    active.g.scale.setScalar(Math.max(scale, 0.0001));
+    active.g.position.y = trayTop + (t >= 6.6 && t < 7.2 ? (t - 6.6) * 0.4 : 0);
+    setLevel(active, level);
+    active.coffee.material.color.copy(DARK).lerp(CREMA, Math.min(1, (level - 0.22) / 0.56));
+    const bottom = trayTop + level * S;
+    for (const s of streams) {
+      const len = flowing ? Math.max(0.001, top - bottom) : 0.001;
+      const grow = t >= 1 && t < 1.25 ? (t - 1) / 0.25 : 1;            // first drops falling
+      s.visible = flowing;
+      s.position.y = top;
+      s.scale.y = len * grow;
+      s.position.x = s.userData.x ??= s.position.x;
+      s.position.x = s.userData.x + Math.sin(t * 23 + s.userData.x * 40) * 0.004;
+    }
+  }
+
+  // Fit the counter in the stage on any screen
+  const look = new THREE.Vector3(0, 0.8, 0.35);
+  function fit() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    const halfV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const halfW = camera.aspect < 1.3 ? 2.0 : 3.4;                     // phones focus on the machine; drag to see the rest
+    const dist = Math.max(halfW / (halfV * camera.aspect), 1.25 / halfV) + 3.2;
+    camera.position.set(0, dist * 0.32 + 0.6, dist);
+    camera.lookAt(look);
+    if (reduce) render(CYCLE * 0.7);
+  }
+  new ResizeObserver(fit).observe(stage);
+
+  // Drag sideways to turn the counter; vertical swipes still scroll the page
+  let yaw = 0, target = 0, dragging = false, lastX = 0;
+  canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e => { if (!dragging) return; target = Math.max(-0.95, Math.min(0.95, target + (e.clientX - lastX) * 0.007)); lastX = e.clientX; });
+  const stop = () => { dragging = false; };
+  canvas.addEventListener('pointerup', stop); canvas.addEventListener('pointercancel', stop);
+
+  const t0 = performance.now();
+  let running = true, raf = 0;
+  function render(cycleT, now = performance.now()) {
+    const t = (now - t0) / 1000;
+    const idle = (dragging || reduce) ? 0 : Math.sin(t * 0.3) * 0.22;
+    yaw += (target + idle - yaw) * 0.06;
+    world.rotation.y = yaw;
+    pour(cycleT);
+    needle.rotation.z = 0.6 + (reduce ? 0 : Math.sin(t * 1.3) * 0.05);
+    renderer.render(scene, camera);
+  }
+  function frame(now) {
+    render(((now - t0) / 1000) % CYCLE, now);
+    if (running) raf = requestAnimationFrame(frame);
+  }
+
+  stage.classList.add('is-3d');
+  document.getElementById('drag-hint').hidden = false;
+  fit();
+  if (reduce) { running = false; render(CYCLE * 0.7); } else raf = requestAnimationFrame(frame);
+
+  // Pause when off screen or in a background tab (saves phone battery)
+  const setRunning = on => {
+    if (reduce) return;
+    if (on && !running) { running = true; raf = requestAnimationFrame(frame); }
+    if (!on) { running = false; cancelAnimationFrame(raf); }
+  };
+  new IntersectionObserver(([e]) => setRunning(e.isIntersecting && !document.hidden)).observe(stage);
+  document.addEventListener('visibilitychange', () => setRunning(!document.hidden));
+</script>
+</body>
+</html>
